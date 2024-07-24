@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!--不显示 Logback 默认的启动信息-->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+<!--    定义 LOG_NAME 用于区分多个运行示例时名称冲突的问题-->
+<!--    <property name="LOG_NAME" value="spring"/>-->
+<!--    <springProperty scope="context" name="LOG_NAME" source="spring.application.name" />-->
+
+    <property name="LOG_PATH" value="logs"/>
+    <property name="LOG_FILE" value="${LOG_PATH}/meta.log}"/>
+
+    <appender name="dailyRollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_FILE}</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <FileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- or whenever the file size reaches 50MB -->
+                <maxFileSize>5MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} |%8thread| %5p : %m%n</Pattern>
+        </encoder>
+    </appender>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>%d{MM-dd HH:mm:ss.SSS} |%8thread| %5p : %m%n</Pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.appmeta" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="dailyRollingFileAppender"/>
+    </root>
+
+</configuration>

@@ -1,0 +1,38 @@
+
+# Intellij project files
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Maven
+log/
+logs/
+target/
+/target/
+
+/dump/
+*.log
+
+# 所有以 ~ 开头的文件都不处理
+~*
+.~*
+
+attach/
+www/
+www-app/
+www-history/
+terminal/
+static.zip
+
+meta-server-1.0.jar
+meta-server-1.0.jar.bk
+version-*.txt
+
+.ADMIN
+shorturl.txt
+
+dependency-reduced-pom.xml
+launch.properties
+
+meta-deploy-demo

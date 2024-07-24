@@ -1,0 +1,3 @@
+# 设置 Github 展示的主语言
+*.java linguist-language=java
+*.kt linguist-language=kotlin

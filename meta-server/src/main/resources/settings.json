@@ -1,0 +1,126 @@
+[
+  {
+    "id":"COM_NAME",
+    "category": "COMMON",
+    "content":"APP-META 元宇宙",
+    "form":"TEXT",
+    "summary":"默认为：APP-META 元宇宙",
+    "title":"应用名称"
+  },
+  { "id": "COM_FOOTER", "title":"页面底部信息", "category": "COMMON", "summary": "显示在页面底部的版权信息（支持 HTML），占位符：{{year}}=当前年份 {{version}}=版本号" },
+  { "id": "COM_WATERMARK", "title":"显示水印", "category": "COMMON", "form": "RADIO", "content": true, "summary": "此水印为全屏显示，默认 true" },
+  { "id": "COM_WATERMARK_TEXT", "title":"水印内容", "category": "COMMON", "content": "{{id}}（{{date}}）", "summary": "占位符：{{id}}=登录用户ID {{name}}=用户名称 {{ip}}=终端IP {{date}}=当前日期，不支持换行显示" },
+  { "id": "COM_WATERMARK_WIDTH", "title":"水印宽度", "category": "COMMON", "form": "NUMBER", "content": 380, "summary": "单个水印的宽度（如果内容较长需要加大此值），默认 380" },
+  { "id": "COM_WATERMARK_COLOR", "title":"水印颜色", "category": "COMMON", "content": "rgba(128, 128, 128, .15)", "summary": "水印文本颜色，默认 rgba(128, 128, 128, .15)" },
+  { "id": "COM_DOC_PREVIEW_MAX", "title":"附件预览阈值", "category": "COMMON", "content": 2, "summary": "附件可预览的大小阈值（超过不允许在线预览），单位MB，默认为 2" },
+  {
+    "id":"PICTURE_SUFFIX",
+    "category":"CONTENT",
+    "content":"JPG,JPEG,GIF,PNG,WEBP",
+    "form":"TEXT",
+    "summary":"允许上传的图片扩展名（大写），默认 JPG,JPEG,GIF,PNG,WEBP",
+    "title":"图片文件后缀"
+  },
+  {
+    "id":"PICTURE_WIDTH",
+    "category":"CONTENT",
+    "content":"960",
+    "form":"NUMBER",
+    "summary":"文档内容图片压缩宽度（上限，单位 px），默认 960",
+    "title":"图片压缩宽度"
+  },
+  {
+    "id": "AUTH_AES_KEY",
+    "title": "通用密钥",
+    "category": "AUTH",
+    "content": "",
+    "summary": "对于有必要但不是非常重要的数据（如用户名、文档名）进行加密时用到的密钥，注意：请勿随意修改，否则将造成数据无法还原"
+  },
+  {
+    "id": "AUTH_METHOD",
+    "form": "SELECT",
+    "title": "认证方式",
+    "category": "COMMON",
+    "content": "PWD",
+    "formValue": "PWD|密码认证,CAS|CAS集中认证,PICK|脚本摘取",
+    "summary": "用户登录认证方式，默认为密码认证（需先设置密码）"
+  },
+  {
+    "id": "AUTH_JWT_KEY",
+    "title": "令牌密钥",
+    "category": "AUTH",
+    "content": "",
+    "summary": "请慎重填写"
+  },
+  {
+    "id": "AUTH_JWT_EXPIRE",
+    "title": "令牌有效期",
+    "category": "AUTH",
+    "content": "120",
+    "summary": "单位分钟，默认值 120（2小时）"
+  },
+  {
+    "id": "AUTH_CAS_HOST",
+    "title": "CAS服务地址",
+    "category": "AUTH",
+    "content": "",
+    "summary": "此值为空将无法进行CAS认证"
+  },
+  {
+    "id": "AUTH_CAS_URL",
+    "title": "CAS回调前端地址",
+    "category": "AUTH",
+    "content": "",
+    "summary": "测试地址为 http://localhost:3000/#/login-cas"
+  },
+  {
+    "id": "AUTH_CAS_SECRET",
+    "title": "CAS密钥",
+    "category": "AUTH",
+    "content": "34dhPTk21b64Jsza",
+    "summary": "用于解密CAS认证返回的密文"
+  },
+  {
+    "id": "AUTH_CAS_PARAM",
+    "title": "CAS令牌参数名",
+    "category": "AUTH",
+    "content": "token",
+    "summary": "默认值：token"
+  },
+  {
+    "id": "APP_MICRO_INJECT",
+    "title": "小程序内容注入",
+    "category": "APP",
+    "content": "<script src='/meta-helper.js'></script><script>window.onload = ()=> H && H.data && H.data.init()</script>",
+    "summary": "注入到小程序的 JS 文件（在小程序部署后添加到 index.html 文件中）"
+  },
+  {
+    "id": "SYS_NOTICE_LINE",
+    "title": "公告回执",
+    "form": "RADIO",
+    "category": "SYSTEM",
+    "content": false,
+    "summary": "勾选后，系统会记录公告投放及阅读的时间，以便统计"
+  },
+
+  { "id": "DBM_LIMIT", "title":"默认查询数据条数", "category": "DBM","form": "NUMBER", "content": 200, "summary": "读取表数据时条数上限，默认 200" },
+  { "id": "DBM_BATCH", "title":"开启批处理", "category": "DBM","form": "RADIO", "content": true, "summary": "DBM 模块执行 SQL 时是否使用批处理模式（支持同时执行多条语句），默认 true" },
+
+  { "id": "SYS_ACCOUNT_INTERVAL", "title":"用户同步周期", "category": "SYSTEM", "form": "NUMBER", "content": 0, "summary": "同步远程用户信息的频次（单位天），默认 0（设置位0则不同步）" },
+  { "id": "SYS_ACCOUNT_REMOTE", "title":"用户同步地址", "category": "SYSTEM", "content": "", "summary": "同步数据来源（URL），需要返回至少包含 用户ID、用户名、部门 的二维数组" },
+
+  { "id": "SYS_TERMINAL_HOST", "title":"后端服务地址", "category": "SYSTEM", "content": "http://127.0.0.1", "summary": "请求转发到后端服务时的地址，请填写完整地址（仅对平台部署），默认值 http://127.0.0.1" },
+  { "id": "SYS_TERMINAL_HEADER_NAME", "title":"后端服务用户HEADER名", "category": "SYSTEM", "content": "UA", "summary": "请求转发到后端服务时附带的 HEADER 名称" },
+  { "id": "SYS_TERMINAL_HEADER_VALUE", "title":"后端服务用户HEADER值", "category": "SYSTEM", "content": "{{ id }}-{{ name }}-{{ ip }}-{{ role }}", "summary": "请求转发到后端服务时附带的 HEADER 内容，占位符：id=用户ID，name=用户名（URL编码），ip，time=13位时间戳，role=用户的应用角色" },
+
+  { "id": "SYS_ROBOT_TRACE", "title":"持久化机器人运行信息", "category": "SYSTEM","form": "RADIO", "content": true, "summary": "记录网页机器人运行结果信息（来自客户端上传），包含但不限于任务信息、日志、耗时等，默认 true" },
+  { "id": "SYS_WHITE_IP", "title":"特殊操作IP绑定", "category": "SYSTEM", "content": "", "summary": "特殊操作（包含但不限于前端更新、后端服务刷新）需要管理员权限+IP验证，多个使用英文逗号隔开" },
+  { "id": "SYS_DEFAULT_CHANNEL", "title":"默认终端类型", "category": "SYSTEM", "content": "client", "summary": "记录终端访问/调用接口信息时，若 channel 字段缺失而使用的默认值" },
+
+  { "id": "SYS_HOST", "title":"平台前缀地址", "category": "SYSTEM", "content": "", "summary": "默认为空，特殊情况（如有前置网关）请配置" },
+
+  { "id": "TERMINAL_DETAIL", "title":"记录请求转发详细", "category": "TERMINAL","form": "RADIO", "content": true, "summary": "勾选后，将记录请求转发的详细信息（如HEADER、BODY）到 terminal_log_detail 表" },
+  { "id": "TERMINAL_CHANNEL", "title":"终端类型限定", "category": "TERMINAL", "content": "", "summary": "仅记录在此范围终端的请求转发详细信息（多个用英文逗号隔开）" },
+  { "id": "TERMINAL_HEADER", "title":"请求头限定", "category": "TERMINAL", "content": "content-type,user-agent", "summary": "持久化请求转发详细信息时仅记录此范围内的 HEADER（多个用英文逗号隔开）" },
+  { "id": "TERMINAL_MAX", "title":"请求日志上限", "category": "TERMINAL", "form":"NUMBER", "content": 10, "summary": "持久化请求转发详细信息时记录字节长度超过此值将被忽略，单位 KB" }
+]

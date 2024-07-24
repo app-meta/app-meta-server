@@ -1,0 +1,5 @@
+logging:
+  # 生产环境下，使用精简的日志
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p : %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} ${PID:- } %5p : %msg%n"

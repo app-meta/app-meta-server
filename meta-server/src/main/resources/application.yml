@@ -1,0 +1,83 @@
+server:
+  port: 10086
+  servlet:
+    context-path: /app-meta
+
+spring:
+  application:
+    name: APP-META-SERVER（应用元宇宙服务端）
+  profiles:
+    active: dev
+    include: basic
+  datasource:
+    name: app
+    url: jdbc:mysql://127.0.0.1:33006/app-meta?allowMultiQueries=true&serverTimezone=UTC
+    username: root
+    password: rootroot
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  threads:
+    virtual:
+      enabled: true
+#  jackson:
+#     #序列化时忽略 null 的属性
+#    default-property-inclusion: non_null
+
+nerve:
+  cors: false
+  init: false
+  auth:
+    enable: true
+    tokenName: MUA
+    popularUrls:
+      - /
+      - /index.html
+      - /static/**
+      - /meta-helper.js
+      - /icons.png
+      - /VERSION.txt
+      - /www/**
+      - /s/**
+      - /time
+      - /welcome
+      - /login_with_pwd
+      - /login_with_pick
+      - /login_with_cas
+      - /login_with_cas_bck
+      - /outreach/**
+      - /faas/**
+      - /service/**
+    innerUrls:
+      - /query
+      - /whoami
+      - /api/**
+      - /app/**
+      - /attachment/**
+      - /data/**
+      - /form/**
+      - /page/**
+      - /notice/**
+      - /account/**
+      - /worker/run-robot
+      - /worker/status
+      - /worker/fetch/**
+  cache:
+    # caches 为 Map<String, String> 对象
+    # 建议不使用 - 或者中文 作为 key，实在需要 key 包含 - 或者中文，则使用双引号包起来
+    caches:
+      PAGE_LIST: maximumSize=100,expireAfterWrite=10m
+      NOTICE_LIST: maximumSize=1,expireAfterWrite=120m
+      APP_OVERVIEW: maximumSize=200,expireAfterWrite=30m
+  # 备份功能
+  backup:
+    enable: false
+
+mybatis-plus:
+  global-config:
+    enable-sql-runner: true
+
+app:
+  res-protocol: file            #
+  res-path: www                 # 静态资源部署目录
+  res-app-path: www-app         # 自定义小程序部署根目录，小程序访问地址：{context}/{micro-context}/{ID}/index.html
+  res-app-context: www          # 小程序访问前缀，注意要将此值加入到 nerve.auth.popularUrls 集合中

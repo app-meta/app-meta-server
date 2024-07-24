@@ -1,0 +1,14 @@
+logging:
+  level:
+    org.appmeta: DEBUG
+    org.nerve: DEBUG
+  pattern:
+    console: "%clr(%d{MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} [%12.12thread] %clr(%-40.40logger{39}){cyan} : %msg%n"
+
+nerve:
+  init: true
+
+app:
+  res-zip-check: true
+  sys:
+    enableJar: true
