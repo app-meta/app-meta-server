@@ -1,5 +1,7 @@
 package org.appmeta.web
 
+import com.luciad.imageio.webp.WebPWriteParam
+import net.coobird.thumbnailator.Thumbnails
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.appmeta.S
@@ -17,6 +19,11 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Files
 import java.util.*
+import javax.imageio.IIOImage
+import javax.imageio.ImageIO
+import javax.imageio.ImageWriteParam
+import javax.imageio.stream.FileImageOutputStream
+import kotlin.math.min
 
 
 /*
@@ -49,13 +56,54 @@ class AttachmentCtrl(
             "仅允许上传${suffix}类型的图片"
         )
 
-        //保存数据到 本地
-        val targetPath = fileStore.buildPath("${UUID.randomUUID()}.$fileExt", IMAGE)
+        val fileID = UUID.randomUUID().toString()
+        //保存数据到本地
+        val targetPath = fileStore.buildPath("${fileID}.$fileExt", IMAGE)
         if (Files.notExists(targetPath.parent))
             Files.createDirectories(targetPath.parent)
 
-        //未来考虑增加图片压缩
-        FileUtils.copyToFile(file.inputStream, targetPath.toFile())
+        var finalUrl = targetPath.toString()
+
+        /*
+        add on 2024-08-02
+        增加文档图片的裁剪、转 WebP
+         */
+        if(settingService.booleanValue(S.PICTURE_COMPRESS, true)){
+            val maxWidth = settingService.intValue(S.PICTURE_WIDTH, 960)
+            val imgBuffer = ImageIO.read(file.inputStream).let { img->
+                //判断是否需要裁剪图片
+                if(maxWidth > 0 && img.width > maxWidth){
+                    if(logger.isDebugEnabled)   logger.debug("图片 ${file.originalFilename} 宽度超出阈值 $maxWidth 即将裁剪...")
+
+                    Thumbnails.of(img)
+                        .width(maxWidth)
+                        .outputQuality(min(settingService.intValue(S.PICTURE_COMPRESS_Q, 80)/100f, 1.0f))
+                        .asBufferedImage()
+                }
+                else
+                    img
+            }
+            //判断是否需要转换为 WebP
+            if(settingService.booleanValue(S.PICTURE_WEBP, true)){
+                if(logger.isDebugEnabled)   logger.debug("即将将图片 ${file.originalFilename} 转换为 webp 格式...")
+
+                val webpFile = targetPath.parent.resolve("$fileID.webp").toFile()
+                ImageIO.getImageWritersByMIMEType("image/webp").next().let { writer->
+                    val param = WebPWriteParam(writer.locale).also {
+                        it.compressionMode = ImageWriteParam.MODE_EXPLICIT
+                        it.compressionType = it.compressionTypes[WebPWriteParam.LOSSY_COMPRESSION]
+                        it.compressionQuality = min(settingService.intValue(S.PICTURE_WEBP_Q, 80)/100f, 1.0f)
+                    }
+                    writer.output = FileImageOutputStream(webpFile)
+                    writer.write(null, IIOImage(imgBuffer, null, null), param)
+                }
+                finalUrl = webpFile.toString()
+            }
+            else
+                ImageIO.write(imgBuffer, fileExt, targetPath.toFile())
+        }
+        else
+            FileUtils.copyToFile(file.inputStream, targetPath.toFile())
 
         with(Image()) {
             of(user)
@@ -63,7 +111,7 @@ class AttachmentCtrl(
             size = file.size
             filename = file.originalFilename!!
             ext = fileExt.uppercase()
-            path = targetPath.toString()
+            path = finalUrl
             addOn = System.currentTimeMillis()
 
             imgM.insert(this)

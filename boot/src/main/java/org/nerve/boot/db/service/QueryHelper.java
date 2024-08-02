@@ -45,13 +45,17 @@ public class QueryHelper<T> {
                         q.eq(t[1], v);
                         break;
                     case "IN":
+                    case "NOT":
                         List<Object> list = new ArrayList<>();
 
                         if(v instanceof List)           list.addAll((List) v);
                         else if(v instanceof Object[])  list.addAll(Arrays.asList((Object[]) v));
                         else                            list.add(v);
 
-                        q.in(t[1], list);
+                        if("IN" == t[0].toUpperCase())
+                            q.in(t[1], list);
+                        else
+                            q.notIn(t[1], list);
                         break;
                     case "LT":      q.lt(t[1], isSpecial? Long.valueOf((String)v) :v); break;
                     case "LTE":     q.le(t[1], isSpecial? Long.valueOf((String)v) :v); break;

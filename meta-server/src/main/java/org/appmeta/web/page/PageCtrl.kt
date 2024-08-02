@@ -177,6 +177,8 @@ class PageCtrl(
     @PostMapping("list-authable", name = "页面列表（已授权）")
     fun listOfAuthable(@RequestBody model: QueryModel) = resultWithData {
         model.form["EQ_active"] = true
+        //不显示后端服务、FaaS
+        model.form["NOT_template"] = arrayOf(Page.SERVER, Page.FAAS)
 
         _authableList(model)
     }
