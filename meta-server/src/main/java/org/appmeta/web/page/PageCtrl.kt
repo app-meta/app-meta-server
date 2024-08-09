@@ -124,6 +124,19 @@ class PageCtrl(
         }
     }
 
+    @PostMapping("move-to", name = "迁移到其他应用")
+    fun moveTo(@RequestBody model:PageModel) = result {
+        val page = pageM.selectById(model.id)
+        val user = authHolder.get()
+        Assert.isTrue(user.hasRole(Role.ADMIN) || page.uid == user.id, "您没有权限移动该页面")
+
+        pageM.update(null, UpdateWrapper<Page>().eq(F.ID, page.id).set(F.AID, model.aid))
+        "${user.showName}迁移 ${page.id}/${page.name} 到 ${model.aid}".let { msg->
+            logger.info(msg)
+            opLog(msg, page, Operation.MODIFY)
+        }
+    }
+
     @PostMapping("delete", name = "删除页面")
     fun delete(@RequestBody model: IdModel) = result {
         val page = pageM.selectById(model.id)

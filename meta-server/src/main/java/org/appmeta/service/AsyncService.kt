@@ -135,10 +135,10 @@ class LogAsync(
 
         /*
         热度只同步到 App，避免对应的 Page（后端服务） 因热度过高进入排行榜
-        同时，接口调用转化为应用热度有一定的折算（默认是 5 分之一）
+        同时，接口调用转化为应用热度有一定的折算（默认是 3 分之一）
          */
         counter.forEach { (id, v) ->
-            appM.updateLaunch(id, ceil(v / 5.0).toInt())
+            appM.updateLaunch(id, ceil(v / 3.0).toInt())
         }
         logger.info("同步应用热度 $counter")
 
