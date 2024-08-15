@@ -365,7 +365,10 @@ class AppService(
     private val dataM:DataMapper,
     private val refresh: CacheRefresh,
     private val cfg: AppConfig,
-    private val propertyM:AppPropertyMapper) : BaseService<AppMapper, App>() {
+    private val propertyM:AppPropertyMapper
+) : BaseService<AppMapper, App>() {
+
+    fun hasTerminal(aid: String) = pageM.countByTemplate(aid, Page.SERVER)>0
 
     fun detailOf(id: String): Map<String, Any> {
         val app = getById(id) ?: throw ServiceException("应用#${id}不存在")

@@ -29,6 +29,11 @@ class PageServiceTest:AppTest() {
     lateinit var mapper:PageMapper
 
     @Test
+    fun counByTemplate(){
+        println(mapper.countByTemplate(AID_DEMO, Page.SERVER))
+    }
+
+    @Test
     fun list(){
         val model = QueryModel()
         model.form = mutableMapOf("EQ_aid" to "FKZX_CLSCQ")

@@ -13,3 +13,5 @@ import java.io.Serializable
  */
 
 class Document404Exception(id: Serializable?): Exception("文档#${id} 不存在")
+
+class AppOfflineException:Exception("应用已下架/OFFLINE")

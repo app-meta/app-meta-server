@@ -1,19 +1,22 @@
 package org.appmeta.web.app
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper
 import jakarta.validation.Valid
+import org.apache.commons.lang3.exception.ExceptionUtils
 import org.appmeta.F
 import org.appmeta.H
 import org.appmeta.Role
-import org.appmeta.domain.*
+import org.appmeta.component.deploy.Deployer
+import org.appmeta.domain.App
+import org.appmeta.domain.AppMapper
+import org.appmeta.domain.AppRole
+import org.appmeta.domain.AppRoleLink
 import org.appmeta.model.*
 import org.appmeta.service.*
 import org.appmeta.web.CommonCtrl
 import org.nerve.boot.Const.EMPTY
 import org.nerve.boot.Result
 import org.nerve.boot.domain.AuthUser
-import org.nerve.boot.exception.ServiceException
 import org.nerve.boot.module.operation.Operation
 import org.springframework.http.HttpStatus
 import org.springframework.util.AntPathMatcher
@@ -39,7 +42,9 @@ class AppCtrl(
     private val appAsync: AppAsync,
     private val dashboardS: DashboardService,
     private val roleS: AppRoleService,
-    private val mapper: AppMapper, private val service: AppService) : CommonCtrl() {
+    private val deployer: Deployer,
+    private val mapper: AppMapper,
+    private val service: AppService) : CommonCtrl() {
 
     protected fun _checkEditAuth(id: Serializable, worker:(App, AuthUser)->Any?): Result {
         val app = mapper.withCache(id)?: throw Exception("应用[${id}]不存在")
@@ -134,6 +139,27 @@ class AppCtrl(
         }
 
         opLog("修改应用#${model.id} 的属性 ${model.key}=${model.value}", app)
+    }
+
+    @PostMapping("offline", name = "上/下架应用")
+    fun offline(@RequestBody model:IdStringModel) = _checkEditAuth(model.id) { app, user->
+        logger.info("${user.showName}操作应用 ${app.id} 上下架...")
+
+        if(!app.offline){
+            //判断是否有后端服务
+            if(service.hasTerminal(app.id)){
+                try{
+                    deployer.stop(app.id)
+                    logger.info("停止后端服务/${app.id}")
+                }catch (e:Exception){
+                    logger.error("停止 ${app.id} 后端服务失败：${ExceptionUtils.getMessage(e)}")
+                }
+            }
+        }
+        mapper.update(null, UpdateWrapper<App>().eq(F.ID, app.id).set(F.OFFLINE, !app.offline))
+        refresh.app(app.id)
+
+        opLog("${if(app.offline) "上架" else "下架"}应用#${app.id}", app)
     }
 
     @RequestMapping("delete", name = "删除应用")

@@ -1,6 +1,14 @@
 # 数据修复 SQL 汇总
 > 每次数据表结构变更，可能会导致数据缺失，此时需要用程序或者 SQL 进行调整
 
+**应用增加下架字段**
+> on 2024-08-15
+
+```sql
+ALTER TABLE `app-meta`.app ADD offline tinyint DEFAULT 0 NULL COMMENT '是否下架' AFTER active;
+CREATE INDEX app_offline_IDX USING BTREE ON `app-meta`.app (offline);
+```
+
 **页面增加更新日期字段**
 > on 2024-04-19
 

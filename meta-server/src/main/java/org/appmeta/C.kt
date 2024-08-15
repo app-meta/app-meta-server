@@ -54,6 +54,7 @@ object F {
 
     const val SEARCH    = "search"
     const val ACTIVE    = "active"
+    const val OFFLINE   = "offline"
     const val AUTH      = "auth"
     const val MAIN      = "main"
     const val TEMPLATE  = "template"

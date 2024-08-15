@@ -97,6 +97,9 @@ interface PageMapper: BaseMapper<Page> {
 
     @Update("UPDATE page SET launch=launch+1 WHERE id=#{0}")
     fun onLaunch(id:Serializable)
+
+    @Select("SELECT COUNT(*) FROM page WHERE aid=#{aid} AND template=#{template}")
+    fun countByTemplate(@Param("aid") aid:String, @Param("template") template:String):Long
 }
 
 @Mapper

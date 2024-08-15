@@ -28,11 +28,11 @@ import java.io.Serializable
 class App : UserBean, Launchable {
 	companion object {
 		const val FAST		= 0		//快应用
-		const val RPA 		= 1		//WEB-RPA
 		const val EXTRA 	= 2		//外联应用
 	}
 
 	var active 		= false
+	var offline 	= false			//是否下线
 	var abbr 		= ""
 	var category	= FAST
 	var author 		= ""

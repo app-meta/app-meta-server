@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper
 import jakarta.servlet.http.HttpServletResponse
 import org.apache.commons.io.FileUtils
+import org.appmeta.AppOfflineException
 import org.appmeta.Channels.MOBILE
 import org.appmeta.F
 import org.appmeta.Role
@@ -14,6 +15,7 @@ import org.appmeta.domain.*
 import org.appmeta.domain.Page.Companion.SERVER
 import org.appmeta.model.*
 import org.appmeta.service.*
+import org.nerve.boot.Const
 import org.nerve.boot.Result
 import org.nerve.boot.enums.Fields
 import org.nerve.boot.module.operation.Operation
@@ -47,7 +49,6 @@ class PageCtrl(
     private val appM:AppMapper,
     private val documentM:DocumentMapper,
     private val documentS:DocumentService,
-    private val accountM:AccountMapper,
     private val accountHelper: AccountHelper,
     private val dataBatchM:DataBatchMapper,
     private val authConfig: AuthConfig,
@@ -64,12 +65,20 @@ class PageCtrl(
         F.EDIT_AUTH
     )
 
+    private fun _loadApp(aid:String): App {
+        val app = appM.withCache(aid)?: throw Exception("应用#${aid} 不存在")
+        if(app.offline)
+            throw AppOfflineException()
+
+        return app
+    }
+
 
     @PostMapping("create", name = "新建页面")
     fun create(@RequestBody page: Page) = resultWithData {
         val user = authHolder.get()
 
-        appM.withCache(page.aid)?: throw Exception("应用#${page.aid} 不存在")
+        _loadApp(page.aid)
 
         //对于 server 类型，每个应用只能创建一个
         if(page.template == SERVER){
@@ -83,7 +92,8 @@ class PageCtrl(
         pageM.insert(page)
 
         cacheRefresh.pageList()
-        ""
+
+        Const.EMPTY
     }
 
     @PostMapping("modify", name = "修改页面属性")
@@ -129,6 +139,9 @@ class PageCtrl(
         val page = pageM.selectById(model.id)
         val user = authHolder.get()
         Assert.isTrue(user.hasRole(Role.ADMIN) || page.uid == user.id, "您没有权限移动该页面")
+
+        val app = _loadApp(page.aid)
+        if(app.id == model.aid) throw Exception("目标应用一致")
 
         pageM.update(null, UpdateWrapper<Page>().eq(F.ID, page.id).set(F.AID, model.aid))
         "${user.showName}迁移 ${page.id}/${page.name} 到 ${model.aid}".let { msg->
@@ -221,10 +234,13 @@ class PageCtrl(
     @RequestMapping("detail", name = "获取页面内容")
     fun detail(@RequestBody model:PageModel) = resultWithData {
         val page = pageM.selectById(model.id)?: return@resultWithData null
+        //判断应用是否可用
+        _loadApp(page.aid)
+
         val user = authHolder.get()
         model.channel = getChannel()
 
-        val canServie = page.active && authHelper.checkService(page, user)
+        val canService = page.active && authHelper.checkService(page, user)
 
         appAsync.afterLaunch(
             model.also {
@@ -243,11 +259,11 @@ class PageCtrl(
             F.NAME      to page.name,
             F.TEMPLATE  to page.template,
             F.ACTIVE    to page.active,
-            F.CONTENT   to if(canServie) { service.buildContent(page, true) } else "",
-            "documents" to if(canServie) documentS.listByPage("${page.id}") else null
+            F.CONTENT   to if(canService) { service.buildContent(page, true) } else "",
+            "documents" to if(canService) documentS.listByPage("${page.id}") else null
         )
         //对于移动终端，直接返回 User 信息（减少请求次数）
-        if(model.channel == MOBILE && canServie)
+        if(model.channel == MOBILE && canService)
             map[F.USER] = accountHelper.buildUserBean(request.getHeader(authConfig.tokenName))
         map
     }
@@ -271,6 +287,8 @@ class PageCtrl(
      */
     @GetMapping("content", name = "获取页面内容")
     fun loadContent(id:Long) = _checkServiceResult(id) { page, _ ->
+        _loadApp(page.aid)
+
         if(page.template == Page.H5){
             val location = "${appConfig.resAppPath}/${page.aid}-${id}/${appConfig.home}"
             val resource = if("file".equals(appConfig.resProtocol, true)) FileSystemResource(location) else ClassPathResource(location)
