@@ -157,9 +157,12 @@ class ProxyCtrl(
         val logDetail = if(!saveDetail) null else TerminalLogDetail()
 
         return try{
-            val requestBody = StreamUtils.copyToByteArray(request.inputStream)
+            val result = route.redirectDo( request, response, url, service.buildHeader(aid, user) )
+            val resEntity = result.second
+            log.code = resEntity.statusCode.value()
 
             if(logDetail != null){
+                //记录请求信息
                 logDetail.reqHeader = settingS.valueOfList(S.TERMINAL_HEADER)
                     .let { validNames->
                         Collections.list(request.headerNames)
@@ -168,23 +171,18 @@ class ProxyCtrl(
                     }
                     .let { JSON.toJSONString(it) }
 
-                //记录请求主体
-                logDetail.reqBody = String(requestBody, Charsets.UTF_8)
-            }
-
-            route.redirect( request, requestBody, response, url, service.buildHeader(aid, user) ).also { resEntity->
-                log.code = resEntity.statusCode.value()
+                logDetail.reqBody = result.first
 
                 //记录响应值
-                if(logDetail != null){
-                    val headers = mutableMapOf<String, Any?>()
-                    resEntity.headers.mapKeys { h-> headers[h.key.lowercase()] = h.value.first() }
-                    logDetail.resHeader = JSON.toJSONString(headers)
+                val headers = mutableMapOf<String, Any?>()
+                resEntity.headers.mapKeys { h-> headers[h.key.lowercase()] = h.value.first() }
+                logDetail.resHeader = JSON.toJSONString(headers)
 
-                    if(resEntity.hasBody() && resEntity.body!!.size <= settingS.intValue(S.TERMINAL_MAX, 10) * 1024L)
-                        logDetail.resBody = Base64.getEncoder().encodeToString(resEntity.body)
-                }
+                if(resEntity.hasBody() && resEntity.body!!.size <= settingS.intValue(S.TERMINAL_MAX, 10) * 1024L)
+                    logDetail.resBody = Base64.getEncoder().encodeToString(resEntity.body)
             }
+
+            resEntity
         }
         catch (e:Exception) {
             logger.error("[SERVICE-ROUTE] 转发失败", e)

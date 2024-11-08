@@ -137,6 +137,8 @@ class PageCtrl(
     @PostMapping("move-to", name = "迁移到其他应用")
     fun moveTo(@RequestBody model:PageModel) = result {
         val page = pageM.selectById(model.id)
+        Assert.isTrue(page.template != SERVER, "后端服务不支持迁移")
+
         val user = authHolder.get()
         Assert.isTrue(user.hasRole(Role.ADMIN) || page.uid == user.id, "您没有权限移动该页面")
 

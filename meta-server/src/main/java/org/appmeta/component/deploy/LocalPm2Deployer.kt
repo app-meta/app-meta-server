@@ -27,6 +27,11 @@ import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.notExists
 
+/**
+ * 操作系统重启时，如何保证 pm2 进程恢复？
+ * 1. 通过 pm2 save 命令保存进程列表
+ * 2. 通过 pm2 resurrect 命令恢复进程
+ */
 @Component
 class LocalPm2Deployer(private val config: AppConfig):Deployer {
 

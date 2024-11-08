@@ -148,7 +148,7 @@ interface AppMapper:BaseMapper<App> {
 	 *
 	 * 总的来说，就是order by 传参的时候要用$符号，用#不生效（尽管你在控制台看到的生成语句是正确的，但是结果就是不对！
 	 */
-	@Select("SELECT * FROM app WHERE active=1 ORDER BY \${field} DESC LIMIT #{size}")
+	@Select("SELECT * FROM app WHERE active=1 AND offline=0 ORDER BY \${field} DESC LIMIT #{size}")
 	fun loadOrderBy(@Param("field") field:String,@Param("size") size:Int=10):List<App>
 
 	@Cacheable(Caches.APP)
