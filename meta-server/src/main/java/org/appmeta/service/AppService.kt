@@ -9,8 +9,7 @@ import org.appmeta.domain.*
 import org.appmeta.model.AppModel
 import org.appmeta.tool.FileTool
 import org.nerve.boot.Const
-import org.nerve.boot.Const.AT
-import org.nerve.boot.Const.EMPTY
+import org.nerve.boot.Const.*
 import org.nerve.boot.cache.CacheManage
 import org.nerve.boot.db.service.BaseService
 import org.nerve.boot.domain.AuthUser
@@ -265,6 +264,7 @@ class AppRoleService(private val roleM:AppRoleMapper, private val linkM:AppRoleL
             q.set(StringUtils.hasText(role.name), F.NAME, role.name)
             q.set(StringUtils.hasText(role.auth), F.AUTH, role.auth)
             q.set(StringUtils.hasText(role.summary), F.SUMMARY, role.summary)
+            q.set(F.ADD_ON, System.currentTimeMillis())
 
             roleM.update(q).also {
                 if(it>0)    cleanCache(role.aid, role.uuid)
@@ -280,19 +280,24 @@ class AppRoleService(private val roleM:AppRoleMapper, private val linkM:AppRoleL
         Assert.hasText(link.aid, "应用ID不能为空")
         Assert.hasText(link.uid, "用户ID不能为空")
 
-        val old = linkM.load(link.aid, link.uid)
-        if(old != null){
-            if(old.role == link.role) return
+        val uids = if (link.uid.contains(COMMA)) link.uid.split(COMMA) else listOf(link.uid)
+        uids.forEach { uid->
+            link.uid = uid.trim()
 
-            linkM.update(UpdateWrapper<AppRoleLink>().eq(F.AID, link.aid).eq(F.UID, link.uid).set(F.ROLE, link.role))
-        }
-        else{
-            linkM.insert(link)
-        }
-        logger.info("分配${link.uid}在应用${link.aid}下的角色：${link.role}")
+            val old = linkM.load(link.aid, link.uid)
+            if(old != null){
+                if(old.role == link.role) return
 
-        cleanCache(link.aid, link.uid)
-        CacheManage.clear(roleCacheKey(link.aid, link.uid))
+                linkM.update(UpdateWrapper<AppRoleLink>().eq(F.AID, link.aid).eq(F.UID, link.uid).set(F.ROLE, link.role))
+            }
+            else{
+                linkM.insert(link)
+            }
+            logger.info("分配${link.uid}在应用${link.aid}下的角色：${link.role}")
+
+            cleanCache(link.aid, link.uid)
+            CacheManage.clear(roleCacheKey(link.aid, link.uid))
+        }
     }
 
     /**
