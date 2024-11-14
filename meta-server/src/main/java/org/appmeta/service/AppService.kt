@@ -218,7 +218,7 @@ class AppRoleService(private val roleM:AppRoleMapper, private val linkM:AppRoleL
 
     private val UUID_REGEX = Regex("[0-9a-zA-Z_.]+")
     private fun RQ(aid: String, uuid: String?=null) = QueryWrapper<AppRole>().eq(F.AID, aid).eq(uuid!=null, F.UUID, uuid)
-    private fun LQ(aid: String, uid:String) = QueryWrapper<AppRoleLink>().eq(F.AID, aid).eq(F.UID, uid)
+    private fun LQ(aid: String, uid:String?=null) = QueryWrapper<AppRoleLink>().eq(F.AID, aid).eq(uid!=null, F.UID, uid)
 
     private fun roleCacheKey(aid: String, uid: String) = "APP-ROLE-$aid-$uid"
 
@@ -275,6 +275,8 @@ class AppRoleService(private val roleM:AppRoleMapper, private val linkM:AppRoleL
      * 查询某个用户的应用权限
      */
     fun loadLink(aid: String, uid: String) = linkM.load(aid, uid)
+
+    fun loadLinks(aid: String): List<AppRoleLink> = linkM.selectList(LQ(aid))
 
     fun updateLink(link: AppRoleLink) {
         Assert.hasText(link.aid, "应用ID不能为空")

@@ -224,6 +224,11 @@ class AppCtrl(
         opLog("分配应用角色[${link.role}]到用户${link.uid}", app, Operation.MODIFY)
     }
 
+    @PostMapping("role/links", name="查看应用角色分配汇总")
+    fun roleLinkList(@RequestBody model: AppRoleLink) = _checkEditAuth(model.aid) {_, _->
+        roleS.loadLinks(model.aid)
+    }
+
     @PostMapping("role/clean-cache", name = "删除指定应用的授权缓存")
     fun roleCacheClean(@RequestBody model:AppRole) = result { roleS.cleanCache(model.aid) }
 }
