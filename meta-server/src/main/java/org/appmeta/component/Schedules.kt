@@ -1,6 +1,12 @@
 package org.appmeta.component
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
+import org.appmeta.F
 import org.appmeta.S
+import org.appmeta.domain.TerminalLog
+import org.appmeta.domain.TerminalLogDetail
+import org.appmeta.domain.TerminalLogDetailMapper
+import org.appmeta.domain.TerminalLogMapper
 import org.appmeta.service.AccountService
 import org.nerve.boot.module.schedule.AbstractSchedule
 import org.nerve.boot.module.setting.SettingService
@@ -41,5 +47,32 @@ class DailySchedule(private val accountS:AccountService, private val settingS:Se
                 return "Account 更新：${accountS.refreshFromRemote(remote)}"
         }
         return null
+    }
+}
+
+@Component
+class LogDetailCleanSchedule(
+    private val settingS: SettingService,
+    private val logM: TerminalLogMapper,
+    private val logDetailM: TerminalLogDetailMapper
+) : AbstractSchedule() {
+    override fun getCategoryName() = "应用访问日志清理"
+
+    //每天凌晨2点执行
+    @Scheduled(cron = "0 0 2 * * ?")
+    fun doClean() = doWork {
+        val day = settingS.intValue(S.TERMINAL_EXPIRE, 90)
+        //查询到最后可存活的ID值
+        val log = logM.selectOne(
+            QueryWrapper<TerminalLog>()
+                .lt(F.ADD_ON, System.currentTimeMillis() - day*24*60*60*100)
+                .orderByDesc(F.ID)
+        )
+        val count = if(log != null){
+            logDetailM.delete(QueryWrapper<TerminalLogDetail>().le(F.ID, log.id))
+        }
+        else
+            0
+        "清空${day}天之前的请求详情共${count}条"
     }
 }
