@@ -1,21 +1,20 @@
 package org.appmeta.web.app
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page
 import jakarta.validation.Valid
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.appmeta.F
 import org.appmeta.H
 import org.appmeta.Role
 import org.appmeta.component.deploy.Deployer
-import org.appmeta.domain.App
-import org.appmeta.domain.AppMapper
-import org.appmeta.domain.AppRole
-import org.appmeta.domain.AppRoleLink
+import org.appmeta.domain.*
 import org.appmeta.model.*
 import org.appmeta.service.*
 import org.appmeta.web.CommonCtrl
 import org.nerve.boot.Const.EMPTY
 import org.nerve.boot.Result
+import org.nerve.boot.db.service.QueryHelper
 import org.nerve.boot.domain.AuthUser
 import org.nerve.boot.module.operation.Operation
 import org.springframework.http.HttpStatus
@@ -44,15 +43,27 @@ class AppCtrl(
     private val roleS: AppRoleService,
     private val deployer: Deployer,
     private val mapper: AppMapper,
+    private val appLogM:AppLogMapper,
     private val service: AppService) : CommonCtrl() {
 
-    protected fun _checkEditAuth(id: Serializable, worker:(App, AuthUser)->Any?): Result {
+    protected fun _checkEditAuth(id: Serializable):Pair<App, AuthUser>{
         val app = mapper.withCache(id)?: throw Exception("应用[${id}]不存在")
         val user = authHolder.get()
         if(app.uid == user.id || H.hasAnyRole(user, Role.ADMIN, Role.APP_MANAGER))
-            return resultWithData { worker(app, user) }
+            return Pair(app, user)
 
         throw Exception(HttpStatus.UNAUTHORIZED.name)
+    }
+
+    protected fun _checkEditAuth(id: Serializable, worker:(App, AuthUser)->Any?): Result {
+//        val app = mapper.withCache(id)?: throw Exception("应用[${id}]不存在")
+//        val user = authHolder.get()
+//        if(app.uid == user.id || H.hasAnyRole(user, Role.ADMIN, Role.APP_MANAGER))
+//            return resultWithData { worker(app, user) }
+//
+//        throw Exception(HttpStatus.UNAUTHORIZED.name)
+        val data = _checkEditAuth(id)
+        return resultWithData { worker(data.first, data.second) }
     }
 
     @PostMapping("overview", name = "应用统计总览")
@@ -231,4 +242,16 @@ class AppCtrl(
 
     @PostMapping("role/clean-cache", name = "删除指定应用的授权缓存")
     fun roleCacheClean(@RequestBody model:AppRole) = result { roleS.cleanCache(model.aid) }
+
+    @PostMapping("log-{aid}", name="应用日志")
+    fun logList(@RequestBody model: QueryModel, @PathVariable aid:String) = QueryHelper<AppLog>().let { h->
+        _checkEditAuth(aid)
+
+        model.form["EQ_aid"] = aid
+        val p = Page.of<AppLog>(model.pagination.page.toLong(), model.pagination.pageSize.toLong())
+        val list = appLogM.selectList(p, h.buildFromMap(model.form))
+
+        logger.info("SIZE={}", list.size)
+        Result(p.total, list)
+    }
 }

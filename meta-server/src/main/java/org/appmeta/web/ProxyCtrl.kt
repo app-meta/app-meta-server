@@ -6,6 +6,7 @@ import com.github.jknack.handlebars.Template
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletResponse
 import org.apache.commons.lang3.exception.ExceptionUtils
+import org.appmeta.Channels
 import org.appmeta.F
 import org.appmeta.H
 import org.appmeta.S
@@ -155,11 +156,22 @@ class ProxyCtrl(
         }
 
         val logDetail = if(!saveDetail) null else TerminalLogDetail()
+        var resLog:String? = null
 
         return try{
             val result = route.redirectDo( request, response, url, service.buildHeader(aid, user) )
             val resEntity = result.second
             log.code = resEntity.statusCode.value()
+
+            //记录响应值
+            val resHeaders = mutableMapOf<String, Any?>()
+            resEntity.headers.mapKeys { h-> resHeaders[h.key.lowercase()] = h.value.first() }
+            //判断是否有响应日志
+            settingS.value(S.TERMINAL_LOG_HEADER).also { h->
+                if(resHeaders.containsKey(h) && resHeaders[h] is String){
+                    resLog =  resHeaders[h] as String
+                }
+            }
 
             if(logDetail != null){
                 //记录请求信息
@@ -173,10 +185,7 @@ class ProxyCtrl(
 
                 logDetail.reqBody = result.first
 
-                //记录响应值
-                val headers = mutableMapOf<String, Any?>()
-                resEntity.headers.mapKeys { h-> headers[h.key.lowercase()] = h.value.first() }
-                logDetail.resHeader = JSON.toJSONString(headers)
+                logDetail.resHeader = JSON.toJSONString(resHeaders)
 
                 if(resEntity.hasBody() && resEntity.body!!.size <= settingS.intValue(S.TERMINAL_MAX, 10) * 1024L)
                     logDetail.resBody = Base64.getEncoder().encodeToString(resEntity.body)
@@ -193,6 +202,10 @@ class ProxyCtrl(
         }
         finally {
             logAsync.save(log, if(saveDetail) logDetail else null)
+            //如果存在日志，则记录
+            if(resLog != null){
+                logAsync.saveAppLog(aid, user.id, resLog!!, Channels.TERMINAL)
+            }
         }
     }
 }

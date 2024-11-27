@@ -104,6 +104,19 @@ CREATE TABLE `app_link` (
   KEY `app_version_uid_IDX` (`uid`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- `app-meta`.app_log definition
+
+CREATE TABLE `app_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `aid` varchar(100) NOT NULL,
+  `uid` varchar(100) DEFAULT NULL,
+  `msg` text,
+  `channel` varchar(10) DEFAULT NULL,
+  `addOn` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `app_log_aid_IDX` (`aid`) USING BTREE
+);
+
 CREATE TABLE `page` (
   `id` int NOT NULL AUTO_INCREMENT,
   `aid` varchar(15) NOT NULL,

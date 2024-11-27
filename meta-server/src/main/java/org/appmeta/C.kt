@@ -15,6 +15,7 @@ object Channels {
     const val MOBILE    = "mobile"      //移动端
     const val CLI       = "cli"         //终端命令行
     const val FAAS      = "faas"        //FaaS函数
+    const val TERMINAL  = "terminal"    //后端服务程序
 }
 
 object F {
@@ -134,6 +135,7 @@ enum class S {
     TERMINAL_HEADER,
     TERMINAL_MAX,
     TERMINAL_EXPIRE,
+    TERMINAL_LOG_HEADER,
 
     DBM_LIMIT,
     DBM_BATCH,

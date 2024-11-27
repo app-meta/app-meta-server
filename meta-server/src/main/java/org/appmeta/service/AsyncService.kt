@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
+import java.net.URLDecoder
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -122,6 +123,7 @@ class SystemAsync(private val accountS:AccountService,private val settingS:Setti
 @Service
 class LogAsync(
     private val appM:AppMapper,
+    private val appLogM:AppLogMapper,
     private val logM:TerminalLogMapper,
     private val logDetailM:TerminalLogDetailMapper
 ) {
@@ -165,5 +167,11 @@ class LogAsync(
             detail.id = log.id
             logDetailM.insert(detail)
         }
+    }
+
+    @Async
+    fun saveAppLog(aid:String, uid: String, msg:String, channel:String){
+        appLogM.insert(AppLog(aid, uid, URLDecoder.decode(msg, Charsets.UTF_8), channel))
+        logger.info("记录应用#${aid}日志(U=${uid}) >> $msg")
     }
 }

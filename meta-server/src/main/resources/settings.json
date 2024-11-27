@@ -116,5 +116,6 @@
   { "id": "TERMINAL_CHANNEL", "title":"终端类型限定", "category": "TERMINAL", "content": "", "summary": "仅记录在此范围终端的请求转发详细信息（多个用英文逗号隔开）" },
   { "id": "TERMINAL_HEADER", "title":"请求头限定", "category": "TERMINAL", "content": "content-type,user-agent", "summary": "持久化请求转发详细信息时仅记录此范围内的 HEADER（多个用英文逗号隔开）" },
   { "id": "TERMINAL_MAX", "title":"请求日志上限", "category": "TERMINAL", "form":"NUMBER", "content": 10, "summary": "持久化请求转发详细信息时记录字节长度超过此值将被忽略，单位 KB" },
-  { "id": "TERMINAL_EXPIRE", "title":"请求日志存活期限", "category": "TERMINAL", "form":"NUMBER", "content": 90, "summary": "系统自动清理超存活期限的日志，默认90天" }
+  { "id": "TERMINAL_EXPIRE", "title":"请求日志存活期限", "category": "TERMINAL", "form":"NUMBER", "content": 90, "summary": "系统自动清理超存活期限的日志，默认90天" },
+  { "id": "TERMINAL_LOG_HEADER", "title":"请求响应的日志头", "category": "TERMINAL", "content": "meta-log", "summary": "后端需要记录日志时，赋值该响应头" }
 ]

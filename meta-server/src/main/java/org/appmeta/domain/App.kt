@@ -129,6 +129,23 @@ class AppLink:AppWithUser {
 	}
 }
 
+@CN("应用日志")
+@TableName("app_log")
+class AppLog:AppWithUser {
+	constructor()
+	constructor(aid: String, uid:String, msg:String, channel:String){
+		this.aid		= aid
+		this.uid		= uid
+		this.msg		= msg
+		this.channel	= channel
+		this.addOn		= System.currentTimeMillis()
+	}
+
+	var msg 	= ""
+	var channel = ""
+	var addOn 	= 0L
+}
+
 
 @Mapper
 interface AppMapper:BaseMapper<App> {
@@ -185,3 +202,6 @@ interface AppRoleLinkMapper:BaseMapper<AppRoleLink> {
 
 @Mapper
 interface AppLinkMapper:BaseMapper<AppLink>
+
+@Mapper
+interface AppLogMapper:BaseMapper<AppLog>
