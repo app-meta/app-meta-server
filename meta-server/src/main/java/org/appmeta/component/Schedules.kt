@@ -67,6 +67,7 @@ class LogDetailCleanSchedule(
             QueryWrapper<TerminalLog>()
                 .lt(F.ADD_ON, System.currentTimeMillis() - day*24*60*60*100)
                 .orderByDesc(F.ID)
+                .last("LIMIT 1")
         )
         val count = if(log != null){
             logDetailM.delete(QueryWrapper<TerminalLogDetail>().le(F.ID, log.id))

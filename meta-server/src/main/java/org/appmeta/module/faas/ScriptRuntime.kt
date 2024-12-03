@@ -172,10 +172,10 @@ class MetaRuntimeDevImpl(val context: FuncContext) : MetaRuntime {
 class MetaRuntimeImpl(
     val context: FuncContext,
     val sourceId:Long?,
-    val dbService: DatabaseService,
-    val dataService: DataService,
-    val sessionStore: MutableMap<String, Any?>,
-    val faasRunner: FaasRunner
+    private val dbService: DatabaseService,
+    private val dataService: DataService,
+    private val sessionStore: MutableMap<String, Any?>,
+    private val faasRunner: FaasRunner
 ):MetaRuntime  {
 
     override fun sql(text:String):Any {

@@ -19,6 +19,7 @@ import org.nerve.boot.domain.AuthUser
 import org.nerve.boot.module.operation.Operation
 import org.springframework.http.HttpStatus
 import org.springframework.util.AntPathMatcher
+import org.springframework.util.Assert
 import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
 import java.io.Serializable
@@ -43,6 +44,7 @@ class AppCtrl(
     private val roleS: AppRoleService,
     private val deployer: Deployer,
     private val mapper: AppMapper,
+    private val logAsync: LogAsync,
     private val appLogM:AppLogMapper,
     private val service: AppService) : CommonCtrl() {
 
@@ -243,7 +245,7 @@ class AppCtrl(
     @PostMapping("role/clean-cache", name = "删除指定应用的授权缓存")
     fun roleCacheClean(@RequestBody model:AppRole) = result { roleS.cleanCache(model.aid) }
 
-    @PostMapping("log-{aid}", name="应用日志")
+    @PostMapping("log-list-{aid}", name="应用日志")
     fun logList(@RequestBody model: QueryModel, @PathVariable aid:String) = QueryHelper<AppLog>().let { h->
         _checkEditAuth(aid)
 
@@ -253,5 +255,15 @@ class AppCtrl(
 
         logger.info("SIZE={}", list.size)
         Result(p.total, list)
+    }
+
+    @PostMapping("log-add", name="录入应用日志")
+    fun logAdd(@RequestBody log: AppLog) = result {
+        Assert.hasText(log.msg, "日志内容不能为空")
+
+        val app = mapper.withCache(log.aid)?: throw Exception("应用[${log.aid}]不存在")
+        val user = authHolder.get()
+
+        logAsync.saveAppLog(app.id, user.id, log.msg, getChannel())
     }
 }
