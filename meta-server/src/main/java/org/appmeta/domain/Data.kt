@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableLogic
 import com.baomidou.mybatisplus.annotation.TableName
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import com.baomidou.mybatisplus.core.mapper.BaseMapper
+import com.baomidou.mybatisplus.extension.handlers.Fastjson2TypeHandler
 import jakarta.validation.constraints.NotBlank
 import org.apache.ibatis.annotations.*
 import org.apache.ibatis.mapping.ResultSetType

@@ -7,7 +7,9 @@ import org.appmeta.ANY
 import org.appmeta.F
 import org.appmeta.S
 import org.appmeta.component.AppConfig
+import org.appmeta.module.dbm.DatabaseSource.Companion.SQLITE
 import org.nerve.boot.Const.COMMA
+import org.nerve.boot.Const.EMPTY
 import org.nerve.boot.cache.CacheManage
 import org.nerve.boot.domain.AuthUser
 import org.nerve.boot.module.setting.SettingService
@@ -25,12 +27,16 @@ class DatabaseService(
     private val logM:DatabaseLogMapper,
     private val config: AppConfig,
     private val authM:DatabaseAuthMapper,
-    private val sourceS:DatabaseSourceService, private val settingS:SettingService) {
+    private val sourceS:DatabaseSourceService,
+    private val settingS:SettingService) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     private val LIMIT = "LIMIT"
 
     private val dataSources = mutableMapOf<Serializable, HikariDataSource>()
+    private val dbTypes = mutableMapOf<Serializable, String>()
+
+    private fun detectDBType(id:Serializable):String = dbTypes[id]?: EMPTY
 
     private fun _createDataSource(id:Long): HikariDataSource {
         val source = sourceS.withCache(id)?: throw Exception("数据源#$id 不存在，请先定义")
@@ -41,11 +47,15 @@ class DatabaseService(
             if(source.pwd.isNotEmpty())
                 it.password = AESProvider().decrypt(source.pwd, config.dbmKey)
 
-            it.jdbcUrl = "jdbc:${source.type}://${source.host}:${source.port}"
+            it.jdbcUrl = when(source.type){
+                SQLITE      -> "jdbc:${source.type}:${sourceS.reviewSqlitePath(source.host)}"
+                else        -> "jdbc:${source.type}://${source.host}:${source.port}"
+            }
 //            it.driverClassName = "com.mysql.cj.jdbc.Driver"
         })
         ds.maxLifetime = config.dbmLifetime * 60 * 1000
         dataSources[id] = ds
+        dbTypes[id] = source.type
 
         logger.info("创建数据源实例 $ds")
         return ds
@@ -61,10 +71,12 @@ class DatabaseService(
             _createDataSource(model.sourceId)
 
         return dataSource!!.connection.use {
-            if(hasText(model.db)){
+            val type = dbTypes[model.sourceId]?: EMPTY
+            if(type!=SQLITE && hasText(model.db)){
                 if(logger.isDebugEnabled)   logger.debug("自动切换到数据库 ${model.db}")
                 it.createStatement().execute("USE `${model.db}`;")
             }
+
             return@use worker(it)
         }
     }
@@ -81,7 +93,12 @@ class DatabaseService(
         if(logger.isDebugEnabled)   logger.debug("执行SQL > $sql")
         it.execute()
 
-        return@use if(it.resultSet == null) listOf("${it.updateCount} row(s) effected!") else _readResultSet(it.resultSet)
+        return@use it.resultSet.use { rs->
+            if(rs==null)
+                listOf("${it.updateCount} row(s) effected!")
+            else
+                _readResultSet(rs)
+        }
     }
 
     private fun queryForBatch(conn: Connection, sql:String) = conn.createStatement().use { se->
@@ -110,16 +127,31 @@ class DatabaseService(
         return list
     }
 
-    fun listOfDataBase(model: DbmModel) = withConn(model) { queryForList(it, "SHOW DATABASES")}
+    fun listOfDataBase(model: DbmModel) = withConn(model) {
+        if(detectDBType(model.sourceId)==SQLITE)
+            emptyList()
+        else
+            queryForList(it, "SHOW DATABASES")
+    }
 
-    fun listOfTable(model: DbmModel) = withConn(model) { queryForList(it, "SHOW TABLES") }
+    fun listOfTable(model: DbmModel) = withConn(model) {
+        if(detectDBType(model.sourceId)== SQLITE)
+            queryForList(it, "SELECT name FROM sqlite_master WHERE type = 'table'")
+        else
+            queryForList(it, "SHOW TABLES")
+    }
 
     /**
      * 列出指定表的列属性，结果如下
      *
      * Field, Type, Null, Key, Default, Extra
      */
-    fun tableDetail(model: DbmModel) = withConn(model) { queryForList(it, "DESC `${model.table}`") }
+    fun tableDetail(model: DbmModel) = withConn(model) {
+        if(detectDBType(model.sourceId)== SQLITE)
+            queryForList(it, "PRAGMA table_info(${model.table})")
+        else
+            queryForList(it, "DESC `${model.table}`")
+    }
 
     fun runSQL(model: DbmModel):Any {
         if(model.batch && !settingS.booleanValue(S.DBM_BATCH, true))

@@ -101,4 +101,10 @@ class DataBaseManageTest:AppTest() {
             println(service.updateRow(it))
         }
     }
+
+    @Test
+    fun buildSqliteForApp(){
+        println(sourceS.buildSqlitePathForApp("demo/data/text.db", "demo"))
+        println(sourceS.buildSqlitePathForApp("demo/text.db", "test"))
+    }
 }

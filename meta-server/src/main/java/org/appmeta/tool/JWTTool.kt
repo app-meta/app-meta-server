@@ -1,7 +1,6 @@
 package org.appmeta.tool
 
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.apache.commons.lang3.StringUtils
@@ -27,7 +26,7 @@ import javax.crypto.SecretKey
 class JWTTool(private val settingS:SettingService) {
     private val logger      = LoggerFactory.getLogger(javaClass)
 
-    private val algorithm   = SignatureAlgorithm.HS512
+    private val algorithm   = Jwts.SIG.HS512 //SignatureAlgorithm.HS512
     private val ISSUER      = "APP-META"
 
     private fun getSecretKey(): SecretKey {
@@ -44,11 +43,11 @@ class JWTTool(private val settingS:SettingService) {
     fun create(uid: String, ip: String) = create(uid, ip, settingS.intValue(S.AUTH_JWT_EXPIRE, 120))
 
     fun create(uid:String, ip:String, expire:Int) = Jwts.builder()
-            .setSubject(uid)
-            .setAudience(ip)
-            .setIssuer(ISSUER)
-            .setIssuedAt(Date())
-            .setExpiration(Date(System.currentTimeMillis() + expire * 60 * 1000L))
+            .subject(uid)
+            .audience().add(ip).and()
+            .issuer(ISSUER)
+            .issuedAt(Date())
+            .expiration(Date(System.currentTimeMillis() + expire * 60 * 1000L))
             .signWith(getSecretKey(), algorithm)
             .compact()
 
@@ -57,13 +56,14 @@ class JWTTool(private val settingS:SettingService) {
      */
     fun verify(token: String) =
         try {
-            val claims = Jwts.parserBuilder()
+            val claims = Jwts.parser()
                 .requireIssuer(ISSUER)
-                .setSigningKey(getSecretKey()).build()
-                .parseClaimsJws(token)
-                .body
+                .verifyWith(getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .payload
 
-            Pair(claims.subject, claims.audience)
+            Pair(claims.subject, claims.audience.first())
         } catch (e: Exception) {
             logger.error("JWT 校验失败：${e.message}")
             Pair("", "")

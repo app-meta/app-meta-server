@@ -1,8 +1,5 @@
 package org.appmeta.domain
 
-import com.alibaba.fastjson2.JSON
-import com.alibaba.fastjson2.JSONWriter
-import com.baomidou.mybatisplus.extension.handlers.AbstractJsonTypeHandler
 import jakarta.validation.constraints.NotBlank
 import org.nerve.boot.db.StringEntity
 import org.nerve.boot.domain.AuthUser
@@ -104,15 +101,4 @@ interface Launchable {
 
 interface LogicRemove {
     var hide:Boolean
-}
-
-class Fastjson2TypeHandler(private val type:Class<*>): AbstractJsonTypeHandler<Any>() {
-    override fun parse(json: String?) = JSON.parseObject(json, type)
-
-    override fun toJson(obj: Any?) = JSON.toJSONString(
-        obj,
-        JSONWriter.Feature.WriteMapNullValue,
-        JSONWriter.Feature.WriteNullListAsEmpty,
-        JSONWriter.Feature.WriteNullStringAsEmpty
-    )
 }

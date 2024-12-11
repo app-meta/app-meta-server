@@ -42,7 +42,7 @@ public class BaseService<M extends BaseMapper<T>, T extends ID> extends ServiceI
      * @return
      */
     public String nameOfDomain(){
-        return entityClass.getSimpleName();
+        return getEntityClass().getSimpleName();
     }
 
     /**

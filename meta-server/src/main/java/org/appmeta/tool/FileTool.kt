@@ -3,12 +3,14 @@ package org.appmeta.tool
 import org.apache.commons.compress.archivers.ArchiveEntry
 import org.apache.commons.compress.archivers.ArchiveInputStream
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.io.input.ReversedLinesFileReader
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.InputStream
 import java.io.RandomAccessFile
 import java.nio.charset.Charset
 import java.nio.file.Files
@@ -66,7 +68,10 @@ object FileTool {
         }
 
 //        ZipInputStream(FileInputStream(zipFile)).use { zipIs->
-        ArchiveStreamFactory().createArchiveInputStream(BufferedInputStream(FileInputStream(zipFile))).use { zipIs->
+        ArchiveStreamFactory().createArchiveInputStream<ArchiveInputStream<ZipArchiveEntry>>(
+            BufferedInputStream(FileInputStream(zipFile))
+        ).use { zipIs->
+
             val trace = mutableListOf<String>()
             val targetFolder = target.toFile()
 

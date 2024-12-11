@@ -183,6 +183,7 @@ class DatabaseManageCtrl(
 
             return Result.ok(data)
         }catch (e:Exception) {
+            e.printStackTrace()
             log.summary = ExceptionUtils.getMessage(e)
             logger.error("执行数据源操作失败：${log.summary}")
 

@@ -20,14 +20,15 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.test.skip>true</maven.test.skip>
 
-        <version.mysql>8.0.33</version.mysql>
-        <version.mybatis-plus>3.5.5</version.mybatis-plus>
-        <version.fastjson>2.0.42</version.fastjson>
-        <commons.lang3>3.12.0</commons.lang3>
-        <commons.io>2.11.0</commons.io>
+        <version.mysql>9.1.0</version.mysql>
+        <version.mybatis-plus>3.5.9</version.mybatis-plus>
+        <version.fastjson>2.0.53</version.fastjson>
+        <commons.lang3>3.17.0</commons.lang3>
+        <commons.io>2.18.0</commons.io>
         <commons.beanutil>1.9.4</commons.beanutil>
-        <commons.codec>1.15</commons.codec>
-        <jjwt.version>0.11.5</jjwt.version>
+        <commons.codec>1.17.1</commons.codec>
+        <jjwt.version>0.12.6</jjwt.version>
+        <version.bcprov>1.79</version.bcprov>
     </properties>
 
     <dependencies>
@@ -102,6 +103,12 @@
                     <artifactId>mybatis-spring</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId>
+            <version>${version.mybatis-plus}</version>
         </dependency>
 
         <dependency>
@@ -182,7 +189,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.78.1</version>
+            <version>${version.bcprov}</version>
         </dependency>
     </dependencies>
 </project>

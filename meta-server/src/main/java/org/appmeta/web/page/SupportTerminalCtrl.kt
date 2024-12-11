@@ -13,6 +13,7 @@ import org.appmeta.component.AppConfig
 import org.appmeta.component.deploy.Deployer
 import org.appmeta.domain.*
 import org.appmeta.model.*
+import org.appmeta.module.dbm.DatabaseSource.Companion.SQLITE
 import org.appmeta.module.dbm.DatabaseSourceService
 import org.appmeta.service.TerminalService
 import org.appmeta.tool.AuthHelper
@@ -140,11 +141,18 @@ class SupportTerminalCtrl (
             //读取数据源
             dbSourceS.withCache(terminal.dbSource)?.also {source->
                 logger.info("应用#${page.aid}关联数据源#${source.id}|${source.name}，自动填充连接信息")
-                terminal.dbHost = source.host
                 terminal.dbPort = source.port
                 terminal.dbUser = source.username
                 terminal.dbName = source.db
                 terminal.dbPwd  = AESProvider().decrypt(source.pwd, config.dbmKey)
+
+                //对于 sqlite 数据库，只能限定应用目录下的文件
+                if(source.type == SQLITE){
+                    terminal.dbHost = dbSourceS.buildSqlitePathForApp(source.host, page.aid)
+                }
+                else{
+                    terminal.dbHost = source.host
+                }
             }
         }
 

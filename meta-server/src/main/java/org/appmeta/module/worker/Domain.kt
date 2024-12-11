@@ -4,10 +4,10 @@ import com.alibaba.fastjson2.JSON
 import com.baomidou.mybatisplus.annotation.TableField
 import com.baomidou.mybatisplus.annotation.TableName
 import com.baomidou.mybatisplus.core.mapper.BaseMapper
+import com.baomidou.mybatisplus.extension.handlers.Fastjson2TypeHandler
 import org.apache.ibatis.annotations.Mapper
 import org.apache.ibatis.type.JdbcType
 import org.appmeta.F
-import org.appmeta.domain.Fastjson2TypeHandler
 import org.nerve.boot.annotation.CN
 import org.nerve.boot.db.StringEntity
 import org.nerve.boot.enums.Status

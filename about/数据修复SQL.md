@@ -1,6 +1,13 @@
 # 数据修复 SQL 汇总
 > 每次数据表结构变更，可能会导致数据缺失，此时需要用程序或者 SQL 进行调整
 
+**变更应用数据块长度**
+> on 2024-12-11
+
+```sql
+ALTER TABLE `app-meta`.data_block MODIFY COLUMN text MEDIUMTEXT;
+```
+
 **应用增加下架字段**
 > on 2024-08-15
 

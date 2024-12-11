@@ -12,6 +12,7 @@ import org.nerve.boot.domain.IDLong
 class DatabaseSource: LongSummaryBean() {
     companion object {
         const val MYSQL = "mysql"
+        const val SQLITE= "sqlite"
     }
 
     var type        = MYSQL

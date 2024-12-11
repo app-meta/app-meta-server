@@ -35,7 +35,7 @@ import kotlin.io.path.notExists
 @Component
 class LocalPm2Deployer(private val config: AppConfig):Deployer {
 
-    val logger = LoggerFactory.getLogger(javaClass)
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     val CMD = if(IS_WINDOW) "pm2.cmd" else "pm2"
 
