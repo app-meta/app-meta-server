@@ -237,7 +237,7 @@ CREATE TABLE `data_block` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `aid` varchar(100) NOT NULL COMMENT '关联应用ID',
   `uuid` varchar(200) NOT NULL COMMENT '数据块唯一ID',
-  `text` TEXT NOT NULL,
+  `text` MEDIUMTEXT NOT NULL,
   PRIMARY KEY (`id`),
   KEY `data_aid_IDX` (`aid`, `uuid`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

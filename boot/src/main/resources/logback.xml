@@ -23,17 +23,9 @@
     <springProfile name="prod">
         <appender name="dailyRollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <File>${LOG_FILE}</File>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <!-- daily rollover -->
-                <FileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}.%i.log</FileNamePattern>
-
-                <timeBasedFileNamingAndTriggeringPolicy
-                        class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                    <!-- or whenever the file size reaches 50MB -->
-                    <maxFileSize>5MB</maxFileSize>
-                </timeBasedFileNamingAndTriggeringPolicy>
-
-                <!-- keep 30 days' worth of history -->
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <maxFileSize>5MB</maxFileSize>
                 <maxHistory>30</maxHistory>
             </rollingPolicy>
 
@@ -42,18 +34,18 @@
             </encoder>
         </appender>
 
-        <appender name="minuteRollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <!-- rollover every minute -->
-                <FileNamePattern>${LOG_PATH}/minutes/%d{yyyyMMdd-HHmm}.log</FileNamePattern>
-                <!-- keep 30 minutes' worth of history -->
-                <maxHistory>60</maxHistory>
-            </rollingPolicy>
+<!--        <appender name="minuteRollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+<!--            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+<!--                &lt;!&ndash; rollover every minute &ndash;&gt;-->
+<!--                <FileNamePattern>${LOG_PATH}/minutes/%d{yyyyMMdd-HHmm}.log</FileNamePattern>-->
+<!--                &lt;!&ndash; keep 30 minutes' worth of history &ndash;&gt;-->
+<!--                <maxHistory>60</maxHistory>-->
+<!--            </rollingPolicy>-->
 
-            <encoder>
-                <Pattern>${FILE_LOG_PATTERN}</Pattern>
-            </encoder>
-        </appender>
+<!--            <encoder>-->
+<!--                <Pattern>${FILE_LOG_PATTERN}</Pattern>-->
+<!--            </encoder>-->
+<!--        </appender>-->
 
         <logger name="com.nerve" level="INFO"/>
         <logger name="org.springframework.data.mongodb.core.MongoTemplate" level="INFO"/>
