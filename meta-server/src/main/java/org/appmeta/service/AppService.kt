@@ -267,7 +267,7 @@ class AppRoleService(private val roleM:AppRoleMapper, private val linkM:AppRoleL
             q.set(F.ADD_ON, System.currentTimeMillis())
 
             roleM.update(q).also {
-                if(it>0)    cleanCache(role.aid, role.uuid)
+                if(it>0)    cleanCache(role.aid)
             }
         }
 
@@ -305,30 +305,36 @@ class AppRoleService(private val roleM:AppRoleMapper, private val linkM:AppRoleL
     /**
      * 判断是否存在指定路径的访问权限
      */
-    fun checkAuth(aid: String, user: AuthUser, url:String):Boolean = CacheManage.get(
-        listOf(aid, user.id, user.ip, url).joinToString(AT),    // "${user.id}${AT}${aid}${AT}${url}"
-        {
-            val roles = roleM.selectList(RQ(aid))
-            // 如果未配置任何角色，则视为不作拦截
-            if(roles.isEmpty()) return@get true
+    fun checkAuth(aid: String, user: AuthUser, url:String):Boolean = listOf(aid, user.id, user.ip, url).joinToString(AT).let { key->
+        CacheManage.get(
+            key,
+            {
+                val roles = roleM.selectList(RQ(aid))
+                // 如果未配置任何角色，则视为不作拦截
+                if(roles.isEmpty()) return@get true
 
-            val links = linkM.load(aid, user.id)?: return@get false
-            val urls = mutableSetOf<String>()
-            links.roleList().also { userRoles->
-                roles.forEach { r->
-                    if(userRoles.contains(r.uuid))  {
-                        val ips = r.ipList()
-                        // 判断是否为有效的IP范围（精准匹配）
-                        if(ips.isEmpty() || ips.contains(user.ip))
-                            urls.addAll(r.authList())
+                val links = linkM.load(aid, user.id)?: return@get false
+                val urls = mutableSetOf<String>()
+                links.roleList().also { userRoles->
+                    roles.forEach { r->
+                        if(userRoles.contains(r.uuid))  {
+                            val ips = r.ipList()
+                            // 判断是否为有效的IP范围（精准匹配）
+                            if(ips.isEmpty() || ips.contains(user.ip))
+                                urls.addAll(r.authList())
+                        }
                     }
                 }
-            }
-            if(logger.isDebugEnabled)   logger.debug("${user.id}(IP=${user.ip}) 在应用${aid}内的授权：${urls}")
-            AntPathMatcher().let { m-> urls.any { m.match(it, url) } }
-        },
-        3600*10
-    )
+                if(logger.isDebugEnabled)   logger.debug("${user.id}(IP=${user.ip}) 在应用${aid}内的授权：${urls}")
+                AntPathMatcher()
+                    .let { m-> urls.any { m.match(it, url) } }
+                    .also {
+                        if(logger.isDebugEnabled)   logger.debug("缓存${key}=${it}")
+                    }
+            },
+            3600*10
+        )
+    }
 
     /**
      * 返回用户在指定应用下的：
