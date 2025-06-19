@@ -26,6 +26,7 @@ import java.io.Serializable
 @TableName("page")
 class Page : AppWithUser, Authable, Launchable {
     companion object {
+        const val SFC       = "sfc"
         const val H5        = "h5"
         const val MARKDOWN  = "markdown"
         const val ROBOT     = "robot"

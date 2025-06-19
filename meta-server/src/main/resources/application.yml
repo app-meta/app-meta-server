@@ -45,8 +45,10 @@ nerve:
       - /login_with_cas
       - /login_with_cas_bck
       - /outreach/**
-      - /faas/**
-      - /service/**
+      # 公开访问页面
+      - /page/public-view
+#      - /faas/**
+#      - /service/**
     innerUrls:
       - /query
       - /whoami

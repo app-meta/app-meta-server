@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper
 import jakarta.servlet.http.HttpServletResponse
 import org.apache.commons.io.FileUtils
+import org.apache.xmlbeans.impl.xb.xsdschema.All
+import org.appmeta.ALL
 import org.appmeta.AppOfflineException
 import org.appmeta.Channels.MOBILE
 import org.appmeta.F
@@ -321,6 +323,30 @@ class PageCtrl(
         eventPublisher.publishEvent(PageContentUpdateEvent(page))
 
         opLog("更新页面#${model.id} 的内容", page)
+    }
+
+    /**
+     * add on 2025-06-19
+     * 公开访问指定页面（需要配置访问权限为完全公开）
+     */
+    @PostMapping("public-view", name = "公开访问页面")
+    fun publicViewPage(@RequestBody model: PageModel) = resultWithData {
+        val page = _loadPage(model.pid)
+        //目前只允许 SFC 类型公开访问
+        if(page.template != Page.SFC)
+            throw Exception("该页面类型暂不支持公开访问")
+        if(page.serviceAuth != ALL)
+            throw Exception("该页面未配置公开访问")
+
+        //保存访问记录
+        model.aid = page.aid
+        appAsync.afterLaunch(model, "公开访问", requestIP)
+
+        mapOf(
+            F.AID       to page.aid,
+            F.TEMPLATE  to page.template,
+            F.CONTENT   to service.buildContent(page, false)
+        )
     }
 
     /**
