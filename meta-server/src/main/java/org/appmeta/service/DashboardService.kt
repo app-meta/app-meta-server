@@ -21,6 +21,7 @@ import org.nerve.boot.util.DateUtil
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
+import java.io.Serializable
 import java.lang.management.ManagementFactory
 import java.util.*
 
@@ -142,7 +143,8 @@ class DashboardService(
                         },
             "topUser"   to launchMapper.selectMaps(groupBy(UID)).map { v->
                 val id = v[ID] as String
-                v[ID] = "${accountS.getNameById(id)}(${id})"
+                if(id.isNotEmpty())
+                    v[ID] = "${accountS.getNameById(id)}(${id})"
                 v
             },
             "topDepart" to launchMapper.selectMaps(groupBy(DEPART)),
@@ -156,4 +158,18 @@ class DashboardService(
             )
         )
     }
+
+    /**
+     * 统计页面的访问记录
+     *
+     * @param pid 页面ID
+     * @param dayLimit 天数限制
+     * @param limit 返回总数限制
+     */
+    fun ofPage(pid: Serializable, dayLimit: Int = 15, limit:Int = 1000): List<PageLaunch> = launchMapper.selectList(
+        QueryWrapper<PageLaunch>()
+            .eq(F.PID, pid)
+            .ge(F.ADD_ON, System.currentTimeMillis() - dayLimit*24*60*60*1000)
+            .last("LIMIT $limit")
+    )
 }

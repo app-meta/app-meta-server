@@ -18,6 +18,7 @@ import org.appmeta.domain.Page.Companion.SERVER
 import org.appmeta.model.*
 import org.appmeta.service.*
 import org.nerve.boot.Const
+import org.nerve.boot.Const.EMPTY
 import org.nerve.boot.Result
 import org.nerve.boot.enums.Fields
 import org.nerve.boot.module.operation.Operation
@@ -340,7 +341,7 @@ class PageCtrl(
 
         //保存访问记录
         model.aid = page.aid
-        appAsync.afterLaunch(model, "公开访问", requestIP)
+        appAsync.afterLaunch(model, EMPTY, requestIP)
 
         mapOf(
             F.AID       to page.aid,

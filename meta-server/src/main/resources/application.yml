@@ -48,7 +48,7 @@ nerve:
       # 公开访问页面
       - /page/public-view
 #      - /faas/**
-#      - /service/**
+      - /service/**
     innerUrls:
       - /query
       - /whoami

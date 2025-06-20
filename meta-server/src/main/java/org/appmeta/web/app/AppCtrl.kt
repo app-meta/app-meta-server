@@ -69,8 +69,11 @@ class AppCtrl(
     }
 
     @PostMapping("overview", name = "应用统计总览")
-    fun overview(@RequestBody model: IdStringModel) = resultWithData {
-        dashboardS.ofApp(model.id)
+    fun overview(@RequestBody model: PageModel) = resultWithData {
+        if(StringUtils.hasText(model.pid))
+            dashboardS.ofPage(model.pid)
+        else
+            dashboardS.ofApp(model.aid)
     }
 
     @RequestMapping("top", name = "最新TOP10")
